@@ -2,27 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Login | GWRPC Staff Dashboard</title>
+  <title>Staff Login</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
-  <div class="login-container">
-    <h2>GWRPC Staff Dashboard</h2>
-    <form>
-      <label>Staff Username</label>
-      <input type="username" placeholder="oaklee">
+  <div class="login-wrapper">
+    <div class="login-card">
 
-      <label>Password</label>
-      <input type="password" placeholder="●●●●●●●●">
-    
-      <button type="submit">Login</button>
-    </form>
+      <div class="brand">
+        <h1>Greenwich Roleplay Community</h1>
+        <p>Staff Dashboard</p>
+      </div>
 
-    <p class="login-note">
-      Accounts are managed by the Foundership Team. If you are logged out create a support ticket in the discord server.
-      </p>
+      <form id="loginForm">
+        <div class="field">
+          <label>Username</label>
+          <input type="email" placeholder="oaklee" required>
+        </div>
+
+        <div class="field">
+          <label>Password</label>
+          <input type="password" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit">Sign In</button>
+      </form>
+
+      <span class="help-text">
+        Accounts are managed by the Foundership Team. If you are logged out create a support ticket in the discord server.
+      </span>
+
+    </div>
   </div>
-  
+
 </body>
 </html>
