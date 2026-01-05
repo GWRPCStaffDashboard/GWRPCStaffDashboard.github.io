@@ -19,8 +19,6 @@
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     .error-message { color: red; display: none; margin: 10px 0; }
-    .login-options { margin-top: 10px; }
-    .login-options button { margin-right: 10px; }
   </style>
 </head>
 <body>
@@ -36,8 +34,8 @@
 
     <form id="loginForm">
       <div class="field">
-        <label>Username</label>
-        <input type="text" id="username" placeholder="Enter your username" required>
+        <label>Username or Email</label>
+        <input type="text" id="username" placeholder="Enter your username or email" required>
       </div>
 
       <div class="field">
@@ -48,12 +46,8 @@
       <div class="error-message" id="errorMessage"></div>
 
       <button type="submit" id="loginBtn">Sign In</button>
-
       <div class="spinner" id="spinner"></div>
 
-      <div class="login-options">
-        <button type="button" id="anonymousBtn">Login Anonymously</button>
-      </div>
     </form>
 
     <span class="help-text">
@@ -88,7 +82,6 @@
   const errorMessage = document.getElementById("errorMessage");
   const spinner = document.getElementById("spinner");
   const button = document.getElementById("loginBtn");
-  const anonBtn = document.getElementById("anonymousBtn");
 
   function showError(message) {
     errorMessage.textContent = message;
@@ -99,35 +92,45 @@
     spinner.style.display = isLoading ? "inline-block" : "none";
     button.disabled = isLoading;
     button.textContent = isLoading ? "Signing in..." : "Sign In";
-    anonBtn.disabled = isLoading;
   }
 
-  // ----- Staff login: username -> email -----
+  // ----- Staff login: username/email (case-insensitive) -----
   form.addEventListener("submit", async function(e) {
     e.preventDefault();
     errorMessage.style.display = "none";
     setLoading(true);
 
-    const username = document.getElementById("username").value.trim();
+    const input = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
 
     try {
-      // Find user by username
-      const querySnapshot = await db.collection("users")
-        .where("username", "==", username)
-        .limit(1)
-        .get();
+      let emailToUse;
 
-      if (querySnapshot.empty) {
-        setLoading(false);
-        return showError("Username not found");
+      // Regex to check if input is a real email
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (emailPattern.test(input)) {
+        // Looks like a real email
+        emailToUse = input;
+      } else {
+        // Treat as username → Firestore lookup (case-insensitive)
+        const querySnapshot = await db.collection("users")
+          .get();
+
+        // Find username ignoring case
+        const userDoc = querySnapshot.docs.find(doc => 
+          doc.data().username.toLowerCase() === input.toLowerCase()
+        );
+
+        if (!userDoc) {
+          setLoading(false);
+          return showError("Username not found");
+        }
+
+        emailToUse = userDoc.data().email;
       }
 
-      const userDoc = querySnapshot.docs[0];
-      const email = userDoc.data().email;
-
       // Login with Firebase Auth
-      await auth.signInWithEmailAndPassword(email, password);
+      await auth.signInWithEmailAndPassword(emailToUse, password);
 
       setLoading(false);
       window.location.href = "dashboard.html";
@@ -137,23 +140,10 @@
       showError(error.message);
     }
   });
-
-  // ----- Anonymous login -----
-  anonBtn.addEventListener("click", async () => {
-    setLoading(true);
-    errorMessage.style.display = "none";
-
-    try {
-      const userCredential = await auth.signInAnonymously();
-      console.log("Anonymous UID:", userCredential.user.uid);
-      setLoading(false);
-      window.location.href = "dashboard.html"; // redirect after anonymous login
-    } catch (error) {
-      setLoading(false);
-      showError(error.message);
-    }
-  });
 </script>
+
+</body>
+</html>
 
 </body>
 </html>
