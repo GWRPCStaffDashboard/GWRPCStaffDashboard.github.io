@@ -40,6 +40,37 @@
 
     </div>
   </div>
+  
+<script>
+  const form = document.getElementById("loginForm");
+  const errorMessage = document.getElementById("errorMessage");
+  const spinner = document.getElementById("spinner");
+  const button = document.getElementById("loginBtn");
+
+  function showError(message) {
+    errorMessage.textContent = message;
+    errorMessage.style.display = "block";
+  }
+
+  function setLoading(isLoading) {
+    spinner.style.display = isLoading ? "block" : "none";
+    button.disabled = isLoading;
+    button.textContent = isLoading ? "Signing in..." : "Sign In";
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    errorMessage.style.display = "none";
+    setLoading(true);
+
+    // TEMP SIMULATION (will be replaced with Firebase)
+    setTimeout(() => {
+      setLoading(false);
+      showError("Invalid username or password");
+    }, 1200);
+  });
+</script>
 
 </body>
 </html>
