@@ -1,8 +1,101 @@
-/* Main styles will go here */
+/* Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-.login-note {
-  margin-top: 15px;
-  font-size: 12px;
+/* Page background */
+body {
+  height: 100vh;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: radial-gradient(circle at top, #111827, #020617);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+/* Wrapper */
+.login-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Login card */
+.login-card {
+  width: 360px;
+  padding: 32px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
   text-align: center;
+}
+
+/* Brand section */
+.brand h1 {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.brand p {
+  font-size: 14px;
+  color: #9ca3af;
+  margin-top: 4px;
+  margin-bottom: 24px;
+}
+
+/* Form fields */
+.field {
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+label {
+  font-size: 13px;
   color: #cbd5f5;
+}
+
+input {
+  width: 100%;
+  margin-top: 6px;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+  font-size: 14px;
+}
+
+input::placeholder {
+  color: #94a3b8;
+}
+
+/* Button */
+button {
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  background: white;
+  color: black;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+/* Footer text */
+.help-text {
+  display: block;
+  margin-top: 18px;
+  font-size: 12px;
+  color: #94a3b8;
 }
