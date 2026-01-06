@@ -117,6 +117,24 @@
       window.location.href = "login";
     });
   };
+
+  document.getElementById("resetPasswordBtn").onclick = async () => {
+  const user = auth.currentUser;
+
+  if (!user || !user.email) {
+    alert("Unable to reset password.");
+    return;
+  }
+
+  try {
+    await auth.sendPasswordResetEmail(user.email);
+    alert("Password reset email sent. Check your email.");
+  } catch (err) {
+    console.error(err);
+    alert("Failed to send password reset email.");
+  }
+};
+
 </script>
 
 </body>
