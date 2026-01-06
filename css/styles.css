@@ -249,6 +249,24 @@ button:hover {
   gap: 10px;
 }
 
+.staff-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.staff-table th,
+.staff-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.staff-table th {
+  opacity: 0.7;
+  font-weight: normal;
+}
+
 /* ===== Dashboard Override ===== */
 
 body {
