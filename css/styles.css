@@ -249,20 +249,6 @@ button:hover {
   gap: 10px;
 }
 
-.reset-btn {
-  background: #2563eb;
-  border: none;
-  padding: 12px;
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.reset-btn:hover {
-  background: #1d4ed8;
-}
-
 /* ===== Dashboard Override ===== */
 
 body {
