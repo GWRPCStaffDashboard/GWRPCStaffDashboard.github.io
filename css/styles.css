@@ -242,3 +242,15 @@ button:hover {
   padding: 30px;
   color: white;
 }
+
+/* ===== Dashboard Override ===== */
+
+body {
+  margin: 0;
+}
+
+.app {
+  position: fixed;
+  inset: 0;
+  display: flex;
+}
