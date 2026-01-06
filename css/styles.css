@@ -249,22 +249,44 @@ button:hover {
   gap: 10px;
 }
 
-.staff-table {
+/* ===== Staff Table ===== */
+
+.table-container {
   width: 100%;
-  border-collapse: collapse;
+  overflow-x: auto;
   margin-top: 20px;
 }
 
-.staff-table th,
-.staff-table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+.staff-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.staff-table thead {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .staff-table th {
-  opacity: 0.7;
-  font-weight: normal;
+  text-align: left;
+  padding: 14px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255,255,255,0.7);
+}
+
+.staff-table td {
+  padding: 14px 16px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  font-size: 14px;
+}
+
+.staff-table tbody tr:hover {
+  background: rgba(255,255,255,0.04);
 }
 
 /* ===== Dashboard Override ===== */
