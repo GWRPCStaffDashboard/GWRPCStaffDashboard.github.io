@@ -134,21 +134,27 @@ function renderStaff(list) {
   list.forEach(u => {
     const canManage = currentUser.accessLevel > u.accessLevel;
 
-    tbody.innerHTML += `
-      <tr>
-        <td>${u.role}</td>
-        <td>${u.accessLevel}</td>
-        <td>${u.disabled ? "Disabled" : "Active"}</td>
-        <td>
-          <button class="action-btn" ${!canManage ? "disabled" : ""}
-            onclick="openEdit('${u.id}')">Edit</button>
-          <button class="action-btn" ${!canManage ? "disabled" : ""}
-            onclick="toggleDisable('${u.id}', ${!!u.disabled})">
-            ${u.disabled ? "Enable" : "Disable"}
-          </button>
-        </td>
-      </tr>
-    `;
+tbody.innerHTML += `
+  <tr>
+    <td>${u.username}</td>
+    <td>${u.role}</td>
+    <td>${u.accessLevel}</td>
+    <td>${u.disabled ? "Disabled" : "Active"}</td>
+    <td>
+      <button class="action-btn"
+        ${canManage ? "" : "disabled"}
+        onclick="${canManage ? `openEdit('${u.id}')` : ""}">
+        Edit
+      </button>
+
+      <button class="action-btn"
+        ${canManage ? "" : "disabled"}
+        onclick="${canManage ? `toggleDisable('${u.id}', ${!!u.disabled})` : ""}">
+        ${u.disabled ? "Enable" : "Disable"}
+      </button>
+    </td>
+  </tr>
+`;
   });
 }
 
