@@ -2,67 +2,74 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Staff Management</title>
+  <title>Staff Management - GWRPC Dashboard</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
-<!-- Sidebar -->
-<div class="sidebar">
-  <h2>Dashboard</h2>
-  <ul>
-    <li><a href="dashboard.html">Home</a></li>
-    <li><a href="staff.html" class="active">Staff Management</a></li>
-    <li><a href="promotions.html">Promotion Log</a></li>
-    <li><a href="infractions.html">Infraction Log</a></li>
-  </ul>
-</div>
+<div class="app">
 
-<!-- Main content -->
-<div class="main-content">
-  <h1>Staff Management</h1>
-
-  <!-- Search + Add Staff -->
-  <div class="top-bar">
-    <input type="text" id="searchUser" placeholder="Search by username">
-    <button id="addStaffBtn" style="display:none;">Add Staff Member</button>
-  </div>
-
-  <!-- Staff List -->
-  <ul id="staffList" class="staff-list"></ul>
-
-  <!-- Selected Staff Details -->
-  <div id="staffDetail" class="staff-detail" style="display:none;">
-    <h3 id="selectedUsername"></h3>
-    <p>Role: <span id="selectedRole"></span></p>
-    <p>Team: <span id="selectedTeam"></span></p>
-
-    <div class="update-section">
-      <label>Update Role:</label>
-      <select id="updateRole">
-        <option value="staff">Staff</option>
-        <option value="moderator">Moderator</option>
-        <option value="admin">Admin</option>
-      </select>
-      <button id="updateRoleBtn">Update Role</button>
+  <!-- Sidebar (same as dashboard) -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <button class="nav-btn" id="infractionsBtn">Infractions</button>
+      <button class="nav-btn" id="promotionsBtn">Promotions</button>
+      <button class="nav-btn active" id="staffBtn">Staff Management</button>
     </div>
 
-    <div class="update-section">
-      <label>Update Team:</label>
-      <select id="updateTeam">
-        <option value="">None</option>
-        <option value="Media Team">Media Team</option>
-        <option value="Events Team">Events Team</option>
-      </select>
-      <button id="updateTeamBtn">Update Team</button>
-    </div>
+    <button class="logout-btn" id="logoutBtn">Logout</button>
+  </aside>
 
-    <div class="action-buttons">
-      <button id="promoteBtn" style="display:none;">Promote</button>
-      <button id="infractionBtn" style="display:none;">Log Infraction</button>
-      <button id="removeStaffBtn" style="display:none;">Remove from Database</button>
-    </div>
-  </div>
+  <!-- Main Content -->
+  <main class="content">
+    <header class="topbar">
+      <div class="site-name">GWRPC Staff Dashboard</div>
+      <div class="user-info" id="userInfo">Loading...</div>
+    </header>
+
+    <!-- Staff Management UI -->
+    <section class="staff-management">
+      <div class="top-bar">
+        <input type="text" id="searchUser" placeholder="Search by username">
+        <button id="addStaffBtn" style="display:none;">Add Staff Member</button>
+      </div>
+
+      <ul id="staffList" class="staff-list"></ul>
+
+      <div id="staffDetail" class="staff-detail" style="display:none;">
+        <h3 id="selectedUsername"></h3>
+        <p>Role: <span id="selectedRole"></span></p>
+        <p>Team: <span id="selectedTeam"></span></p>
+
+        <div class="update-section">
+          <label>Update Role:</label>
+          <select id="updateRole">
+            <option value="staff">Staff</option>
+            <option value="moderator">Moderator</option>
+            <option value="admin">Admin</option>
+          </select>
+          <button id="updateRoleBtn">Update Role</button>
+        </div>
+
+        <div class="update-section">
+          <label>Update Team:</label>
+          <select id="updateTeam">
+            <option value="">None</option>
+            <option value="Media Team">Media Team</option>
+            <option value="Events Team">Events Team</option>
+          </select>
+          <button id="updateTeamBtn">Update Team</button>
+        </div>
+
+        <div class="action-buttons">
+          <button id="promoteBtn" style="display:none;">Promote</button>
+          <button id="infractionBtn" style="display:none;">Log Infraction</button>
+          <button id="removeStaffBtn" style="display:none;">Remove from Database</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
 </div>
 
 <!-- Firebase SDKs -->
@@ -71,13 +78,12 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
 <script>
-  // Firebase config
   const firebaseConfig = {
-    apiKey: "AIzaSyBcaomJMgYpnResuWiYk_ZpyQdvNSUfb1Y", 
-    authDomain: "gwrpc-staff-dashboard.firebaseapp.com", 
-    projectId: "gwrpc-staff-dashboard", 
-    storageBucket: "gwrpc-staff-dashboard.firebasestorage.app", 
-    messagingSenderId: "907153582140", 
+    apiKey: "AIzaSyBcaomJMgYpnResuWiYk_ZpyQdvNSUfb1Y",
+    authDomain: "gwrpc-staff-dashboard.firebaseapp.com",
+    projectId: "gwrpc-staff-dashboard",
+    storageBucket: "gwrpc-staff-dashboard.firebasestorage.app",
+    messagingSenderId: "907153582140",
     appId: "1:907153582140:web:8e881d795740578041bb39"
   };
 
@@ -85,27 +91,38 @@
   const auth = firebase.auth();
   const db = firebase.firestore();
 
-  // Current logged-in user's access level
   let currentUserAccessLevel = 0;
-
-  auth.onAuthStateChanged(async (user) => {
-    if (!user) window.location.href = "login.html"; // redirect if not logged in
-
-    // Get current user access level
-    const snapshot = await db.collection("users").doc(user.uid).get();
-    if (snapshot.exists) currentUserAccessLevel = snapshot.data().accessLevel;
-
-    if (currentUserAccessLevel === 5) document.getElementById("addStaffBtn").style.display = "inline-block";
-    loadStaff();
-  });
-
-  // Elements
-  const staffList = document.getElementById("staffList");
   let selectedStaffUid = null;
   let selectedStaffAccessLevel = null;
 
+  auth.onAuthStateChanged(async (user) => {
+    if (!user) {
+      window.location.href = "login";
+      return;
+    }
+
+    const uid = user.uid;
+    const doc = await db.collection("users").doc(uid).get();
+    if (!doc.exists) { alert("User profile not found."); auth.signOut(); return; }
+    const data = doc.data();
+
+    currentUserAccessLevel = data.accessLevel;
+    document.getElementById("userInfo").textContent = `${data.username} (${data.role})`;
+
+    if (currentUserAccessLevel === 5) document.getElementById("addStaffBtn").style.display = "inline-block";
+
+    loadStaff();
+  });
+
+  // Sidebar navigation
+  document.getElementById("infractionsBtn").onclick = () => { window.location.href = "infractions"; };
+  document.getElementById("promotionsBtn").onclick = () => { window.location.href = "promotions"; };
+  document.getElementById("staffBtn").onclick = () => { window.location.href = "staff"; };
+  document.getElementById("logoutBtn").onclick = () => { auth.signOut().then(()=>window.location.href="login"); };
+
   // Load staff
-  async function loadStaff(searchTerm = "") {
+  async function loadStaff(searchTerm="") {
+    const staffList = document.getElementById("staffList");
     staffList.innerHTML = "";
     const snapshot = await db.collection("users").get();
     snapshot.docs
@@ -119,12 +136,8 @@
       });
   }
 
-  // Search bar
-  document.getElementById("searchUser").addEventListener("input", (e) => {
-    loadStaff(e.target.value);
-  });
+  document.getElementById("searchUser").addEventListener("input", e => loadStaff(e.target.value));
 
-  // Select staff member
   function selectStaff(uid, data) {
     selectedStaffUid = uid;
     selectedStaffAccessLevel = data.accessLevel;
@@ -135,7 +148,6 @@
     document.getElementById("selectedRole").textContent = data.role;
     document.getElementById("selectedTeam").textContent = data.team || "None";
 
-    // Buttons visibility
     document.getElementById("promoteBtn").style.display = currentUserAccessLevel > data.accessLevel ? "inline-block" : "none";
     document.getElementById("infractionBtn").style.display = currentUserAccessLevel > data.accessLevel ? "inline-block" : "none";
     document.getElementById("removeStaffBtn").style.display = currentUserAccessLevel === 5 ? "inline-block" : "none";
@@ -200,3 +212,42 @@
       const rankAtTermination = prompt("Enter current rank:");
       infractionData.rankAtTermination = rankAtTermination;
     }
+
+    await db.collection("infractions").add(infractionData);
+    alert("Infraction logged!");
+  });
+
+  // Remove staff
+  document.getElementById("removeStaffBtn").addEventListener("click", async () => {
+    if (confirm("Are you sure you want to remove this staff member?")) {
+      await db.collection("users").doc(selectedStaffUid).delete();
+      alert("Staff removed!");
+      document.getElementById("staffDetail").style.display = "none";
+      loadStaff();
+    }
+  });
+
+  // Add staff
+  document.getElementById("addStaffBtn").addEventListener("click", async () => {
+    const username = prompt("Username:");
+    const email = prompt("Email:");
+    const role = prompt("Role:");
+    const accessLevel = parseInt(prompt("Access Level (1-5):"), 10);
+    if (!username || !email || !role || !accessLevel) return;
+
+    const userRecord = await firebase.auth().createUserWithEmailAndPassword(email, "defaultPassword123");
+    await db.collection("users").doc(userRecord.user.uid).set({
+      username,
+      email,
+      role,
+      accessLevel,
+      team: "",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    alert("Staff member added!");
+    loadStaff();
+  });
+</script>
+
+</body>
+</html>
