@@ -110,11 +110,13 @@ auth.onAuthStateChanged(async user => {
   if (!doc.exists) return auth.signOut();
 
   currentUser = doc.data();
-  if (currentUser.accessLevel < 5)
+  isSuperAdmin = auth.currentUser.uid === SUPER_ADMIN_UID;
+
+  if (!isSuperAdmin && currentUser.accessLevel < 5)
     return location.href = "dashboard.html";
 
   document.getElementById("userInfo").textContent =
-    `${currentUser.username} (${currentUser.role})`;
+    `${currentUser.username} (${currentUser.role}${isSuperAdmin ? " • OWNER" : ""})`;
 
   loadStaff();
 });
