@@ -2,28 +2,28 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Staff Dashboard</title>
+  <title>ERLC Staff Portal</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
-  <div class="app">
+<div class="app">
 
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-top">
-      <button class="nav-btn" id="infractionsCard">Infractions</button>
-      <button class="nav-btn" id="promotionsCard">Promotions</button>
-      <button class="nav-btn" id="staffCard">Staff Management</button>
+      <button class="nav-btn" id="infractionsBtn">Infractions</button>
+      <button class="nav-btn" id="promotionsBtn">Promotions</button>
+      <button class="nav-btn" id="staffBtn">Staff Management</button>
     </div>
 
     <button class="logout-btn" id="logoutBtn">Logout</button>
   </aside>
 
-  <!-- Main content -->
+  <!-- Main Content -->
   <main class="content">
     <header class="topbar">
-      <div class="site-name">GWRPC Staff Portal</div>
+      <div class="site-name">ERLC Staff Portal</div>
       <div class="user-info" id="userInfo">Loading...</div>
     </header>
 
@@ -35,70 +35,89 @@
 
 </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-  <!-- Firebase init -->
-  <script>
-    const firebaseConfig = {
-    apiKey: "AIzaSyBcaomJMgYpnResuWiYk_ZpyQdvNSUfb1Y",
-    authDomain: "gwrpc-staff-dashboard.firebaseapp.com",
-    projectId: "gwrpc-staff-dashboard",
-    storageBucket: "gwrpc-staff-dashboard.firebasestorage.app",
-    messagingSenderId: "907153582140",
+<!-- Firebase Init -->
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBcaomJMgYpnResuWiYk_ZpyQdvNSUfb1Y", 
+    authDomain: "gwrpc-staff-dashboard.firebaseapp.com", 
+    projectId: "gwrpc-staff-dashboard", 
+    storageBucket: "gwrpc-staff-dashboard.firebasestorage.app", 
+    messagingSenderId: "907153582140", 
     appId: "1:907153582140:web:8e881d795740578041bb39"
-    };
+  };
 
-    firebase.initializeApp(firebaseConfig);
+  firebase.initializeApp(firebaseConfig);
 
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-  </script>
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+</script>
 
-  <!-- Dashboard logic -->
-  <script>
-    auth.onAuthStateChanged(async (user) => {
-      if (!user) {
-        window.location.href = "login.html";
-        return;
-      }
+<!-- Dashboard Logic -->
+<script>
+  auth.onAuthStateChanged(async (user) => {
+    if (!user) {
+      window.location.href = "login.html";
+      return;
+    }
 
+    try {
       const uid = user.uid;
       const doc = await db.collection("users").doc(uid).get();
 
       if (!doc.exists) {
-        alert("No user profile found.");
+        alert("User profile not found.");
         auth.signOut();
         return;
       }
 
       const data = doc.data();
-      document.getElementById("userInfo").textContent =
-      `${data.username} (${data.role})`;
 
+      // Display user info
+      document.getElementById("userInfo").textContent =
+        `${data.username} (${data.role})`;
 
       // Permission-based UI
-      if (data.accessLevel < 4) {
-        document.getElementById("staffCard").style.display = "none";
-      }
-
-      if (data.accessLevel < 4) {
-        document.getElementById("promotionsCard").style.display = "none";
-      }
-
       if (data.accessLevel < 3) {
-        document.getElementById("infractionsCard").style.display = "none";
+        document.getElementById("infractionsBtn").style.display = "none";
       }
-    });
 
-    document.getElementById("logoutBtn").onclick = () => {
-      auth.signOut().then(() => {
-        window.location.href = "login.html";
-      });
-    };
-  </script>
+      if (data.accessLevel < 4) {
+        document.getElementById("promotionsBtn").style.display = "none";
+        document.getElementById("staffBtn").style.display = "none";
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to load user data.");
+      auth.signOut();
+    }
+  });
+
+  // Navigation
+  document.getElementById("infractionsBtn").onclick = () => {
+    window.location.href = "infractions.html";
+  };
+
+  document.getElementById("promotionsBtn").onclick = () => {
+    window.location.href = "promotions.html";
+  };
+
+  document.getElementById("staffBtn").onclick = () => {
+    window.location.href = "staff.html";
+  };
+
+  // Logout
+  document.getElementById("logoutBtn").onclick = () => {
+    auth.signOut().then(() => {
+      window.location.href = "login.html";
+    });
+  };
+</script>
 
 </body>
 </html>
