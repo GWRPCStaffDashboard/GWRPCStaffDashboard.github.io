@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
+const SUPER_ADMIN_UID = "aLXnN1XWYubNyoAI3Lsi39CdbOv1";
+  
 <head>
   <meta charset="UTF-8">
   <title>Staff Management | GWRPC</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+
 
 <div class="app">
 
@@ -97,6 +101,7 @@ const db = firebase.firestore();
 let currentUser = null;
 let staffList = [];
 let editingId = null;
+let isSuperAdmin = false;
 
 auth.onAuthStateChanged(async user => {
   if (!user) return location.href = "login.html";
