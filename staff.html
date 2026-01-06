@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Staff Management</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <h2>Dashboard</h2>
+  <ul>
+    <li><a href="dashboard.html">Home</a></li>
+    <li><a href="staff.html" class="active">Staff Management</a></li>
+    <li><a href="promotions.html">Promotion Log</a></li>
+    <li><a href="infractions.html">Infraction Log</a></li>
+  </ul>
+</div>
+
+<!-- Main content -->
+<div class="main-content">
+  <h1>Staff Management</h1>
+
+  <!-- Search + Add Staff -->
+  <div class="top-bar">
+    <input type="text" id="searchUser" placeholder="Search by username">
+    <button id="addStaffBtn" style="display:none;">Add Staff Member</button>
+  </div>
+
+  <!-- Staff List -->
+  <ul id="staffList" class="staff-list"></ul>
+
+  <!-- Selected Staff Details -->
+  <div id="staffDetail" class="staff-detail" style="display:none;">
+    <h3 id="selectedUsername"></h3>
+    <p>Role: <span id="selectedRole"></span></p>
+    <p>Team: <span id="selectedTeam"></span></p>
+
+    <div class="update-section">
+      <label>Update Role:</label>
+      <select id="updateRole">
+        <option value="staff">Staff</option>
+        <option value="moderator">Moderator</option>
+        <option value="admin">Admin</option>
+      </select>
+      <button id="updateRoleBtn">Update Role</button>
+    </div>
+
+    <div class="update-section">
+      <label>Update Team:</label>
+      <select id="updateTeam">
+        <option value="">None</option>
+        <option value="Media Team">Media Team</option>
+        <option value="Events Team">Events Team</option>
+      </select>
+      <button id="updateTeamBtn">Update Team</button>
+    </div>
+
+    <div class="action-buttons">
+      <button id="promoteBtn" style="display:none;">Promote</button>
+      <button id="infractionBtn" style="display:none;">Log Infraction</button>
+      <button id="removeStaffBtn" style="display:none;">Remove from Database</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyBcaomJMgYpnResuWiYk_ZpyQdvNSUfb1Y",
+    authDomain: "gwrpc-staff-dashboard.firebaseapp.com",
+    projectId: "gwrpc-staff-dashboard",
+    storageBucket: "gwrpc-staff-dashboard.firebasestorage.app",
+    messagingSenderId: "907153582140",
+    appId: "1:907153582140:web:8e881d795740578041bb39"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  // Current logged-in user's access level
+  let currentUserAccessLevel = 0;
+
+  auth.onAuthStateChanged(async (user) => {
+    if (!user) window.location.href = "login.html"; // redirect if not logged in
+
+    // Get current user access level
+    const snapshot = await db.collection("users").doc(user.uid).get();
+    if (snapshot.exists) currentUserAccessLevel = snapshot.data().accessLevel;
+
+    if (currentUserAccessLevel === 5) document.getElementById("addStaffBtn").style.display = "inline-block";
+    loadStaff();
+  });
+
+  // Elements
+  const staffList = document.getElementById("staffList");
+  let selectedStaffUid = null;
+  let selectedStaffAccessLevel = null;
+
+  // Load staff
+  async function loadStaff(searchTerm = "") {
+    staffList.innerHTML = "";
+    const snapshot = await db.collection("users").get();
+    snapshot.docs
+      .filter(doc => doc.data().username.toLowerCase().includes(searchTerm.toLowerCase()))
+      .forEach(doc => {
+        const data = doc.data();
+        const li = document.createElement("li");
+        li.textContent = `${data.username} - ${data.role}`;
+        li.addEventListener("click", () => selectStaff(doc.id, data));
+        staffList.appendChild(li);
+      });
+  }
+
+  // Search bar
+  document.getElementById("searchUser").addEventListener("input", (e) => {
+    loadStaff(e.target.value);
+  });
+
+  // Select staff member
+  function selectStaff(uid, data) {
+    selectedStaffUid = uid;
+    selectedStaffAccessLevel = data.accessLevel;
+
+    const detail = document.getElementById("staffDetail");
+    detail.style.display = "block";
+    document.getElementById("selectedUsername").textContent = data.username;
+    document.getElementById("selectedRole").textContent = data.role;
+    document.getElementById("selectedTeam").textContent = data.team || "None";
+
+    // Buttons visibility
+    document.getElementById("promoteBtn").style.display = currentUserAccessLevel > data.accessLevel ? "inline-block" : "none";
+    document.getElementById("infractionBtn").style.display = currentUserAccessLevel > data.accessLevel ? "inline-block" : "none";
+    document.getElementById("removeStaffBtn").style.display = currentUserAccessLevel === 5 ? "inline-block" : "none";
+  }
+
+  // Update Role
+  document.getElementById("updateRoleBtn").addEventListener("click", async () => {
+    const newRole = document.getElementById("updateRole").value;
+    await db.collection("users").doc(selectedStaffUid).update({ role: newRole });
+    document.getElementById("selectedRole").textContent = newRole;
+    alert("Role updated");
+    loadStaff();
+  });
+
+  // Update Team
+  document.getElementById("updateTeamBtn").addEventListener("click", async () => {
+    const newTeam = document.getElementById("updateTeam").value;
+    await db.collection("users").doc(selectedStaffUid).update({ team: newTeam });
+    document.getElementById("selectedTeam").textContent = newTeam || "None";
+    alert("Team updated");
+  });
+
+  // Promote
+  document.getElementById("promoteBtn").addEventListener("click", async () => {
+    const newRank = prompt("Enter new rank:");
+    const reason = prompt("Enter reason:");
+    if (!newRank || !reason) return;
+
+    const oldRank = document.getElementById("selectedRole").textContent;
+    await db.collection("users").doc(selectedStaffUid).update({ role: newRank });
+    await db.collection("promotions").add({
+      staffUid: selectedStaffUid,
+      promotedByUid: auth.currentUser.uid,
+      oldRank,
+      newRank,
+      reason,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById("selectedRole").textContent = newRank;
+    alert("Promotion logged!");
+    loadStaff();
+  });
+
+  // Infraction
+  document.getElementById("infractionBtn").addEventListener("click", async () => {
+    const type = prompt("Infraction type (Warning, Suspend, Terminate):");
+    const reason = prompt("Reason:");
+    if (!type || !reason) return;
+
+    const infractionData = {
+      staffUid: selectedStaffUid,
+      issuedByUid: auth.currentUser.uid,
+      type,
+      reason,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    if (type.toLowerCase() === "suspend") {
+      const suspendUntil = prompt("Enter unsuspend date (YYYY-MM-DD):");
+      infractionData.suspendUntil = suspendUntil;
+    } else if (type.toLowerCase() === "terminate") {
+      const rankAtTermination = prompt("Enter current rank:");
+      infractionData.rankAtTermination = rankAtTermination;
+    }
