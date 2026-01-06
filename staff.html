@@ -110,7 +110,7 @@ auth.onAuthStateChanged(async user => {
   if (!doc.exists) return auth.signOut();
 
   currentUser = doc.data();
-  isSuperAdmin = auth.currentUser.uid === SUPER_ADMIN_UID;
+  isSuperAdmin = auth.currentUser.uid === "aLXnN1XWYubNyoAI3Lsi39CdbOv1";
 
   if (!isSuperAdmin && currentUser.accessLevel < 5)
     return location.href = "dashboard.html";
