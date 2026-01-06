@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Staff Management | GWRPC</title>
+  <title>Staff Management | ERLC</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -17,123 +17,153 @@
       <button class="nav-btn" onclick="location.href='promotions.html'">Promotions</button>
       <button class="nav-btn active">Staff Management</button>
     </div>
-
     <div class="sidebar-bottom">
       <button class="logout-btn" id="logoutBtn">Logout</button>
     </div>
   </aside>
 
-  <!-- Main Content -->
+  <!-- Content -->
   <main class="content">
     <header class="topbar">
-      <div class="site-name">GWRPC Staff Dashboard</div>
+      <div class="site-name">ERLC Staff Portal</div>
       <div class="user-info" id="userInfo">Loading...</div>
     </header>
 
     <section class="page">
-      <h1>Staff Management</h1>
 
-      <table class="staff-table">
-        <thead>
-          <tr>
-            <th>Username</th>
-            <th>Role</th>
-            <th>Access Level</th>
-          </tr>
-        </thead>
-        <tbody id="staffTable">
-          <tr>
-            <td colspan="3">Loading staff...</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="page-header">
+        <h1>Staff Management</h1>
+        <button class="primary-btn" id="openCreateBtn">Add Staff</button>
+      </div>
+
+      <input
+        type="text"
+        id="searchInput"
+        class="search-input"
+        placeholder="Search staff..."
+      />
+
+      <div class="table-container">
+        <table class="staff-table">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Role</th>
+              <th>Access</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="staffTable"></tbody>
+        </table>
+      </div>
 
     </section>
   </main>
 
 </div>
 
-<!-- Firebase SDKs -->
+<!-- Create Staff Modal -->
+<div class="modal hidden" id="createModal">
+  <div class="modal-box">
+    <h2>Create Staff</h2>
+
+    <input id="newUsername" placeholder="Username (fake email)" />
+    <input id="newRole" placeholder="Role" />
+    <input id="newAccess" type="number" placeholder="Access Level" />
+
+    <div class="modal-actions">
+      <button class="secondary-btn" onclick="closeModal()">Cancel</button>
+      <button class="primary-btn" onclick="createStaff()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
 <script>
   const firebaseConfig = {
-    apiKey: "AIzaSyBcaomJMgYpnResuWiYk_ZpyQdvNSUfb1Y", 
-    authDomain: "gwrpc-staff-dashboard.firebaseapp.com", 
-    projectId: "gwrpc-staff-dashboard", 
-    storageBucket: "gwrpc-staff-dashboard.firebasestorage.app", 
-    messagingSenderId: "907153582140", 
-    appId: "1:907153582140:web:8e881d795740578041bb39"
+    /* SAME CONFIG */
   };
 
   firebase.initializeApp(firebaseConfig);
-
   const auth = firebase.auth();
   const db = firebase.firestore();
 </script>
 
 <script>
-  auth.onAuthStateChanged(async (user) => {
-    if (!user) {
-      location.href = "login.html";
-      return;
-    }
+let currentUserData = null;
+let allStaff = [];
 
-    const uid = user.uid;
-    const userDoc = await db.collection("users").doc(uid).get();
+auth.onAuthStateChanged(async user => {
+  if (!user) return location.href = "login.html";
 
-    if (!userDoc.exists) {
-      alert("User record missing.");
-      auth.signOut();
-      return;
-    }
+  const doc = await db.collection("users").doc(user.uid).get();
+  if (!doc.exists) return alert("User missing");
 
-    const userData = userDoc.data();
+  currentUserData = doc.data();
 
-    // ACCESS CONTROL — Foundership only (adjust level if needed)
-    if (userData.accessLevel < 5) {
-      alert("Access denied.");
-      location.href = "dashboard.html";
-      return;
-    }
-
-    document.getElementById("userInfo").textContent =
-      `${userData.username} - ${userData.role}`;
-
-    loadStaff();
-  });
-
-  async function loadStaff() {
-    const tbody = document.getElementById("staffTable");
-    tbody.innerHTML = "";
-
-    const snapshot = await db.collection("users").get();
-
-    snapshot.forEach(doc => {
-      const u = doc.data();
-
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${u.username}</td>
-        <td>${u.role}</td>
-        <td>${u.accessLevel}</td>
-      `;
-
-      tbody.appendChild(tr);
-    });
-
-    if (tbody.children.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="3">No staff found.</td></tr>`;
-    }
+  if (currentUserData.accessLevel < 5) {
+    alert("Access denied");
+    return location.href = "dashboard.html";
   }
 
-  document.getElementById("logoutBtn").onclick = () => {
-    auth.signOut().then(() => {
-      location.href = "login.html";
-    });
-  };
+  document.getElementById("userInfo").textContent =
+    `${currentUserData.username} (${currentUserData.role})`;
+
+  loadStaff();
+});
+
+async function loadStaff() {
+  const snap = await db.collection("users").get();
+  allStaff = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderStaff(allStaff);
+}
+
+function renderStaff(list) {
+  const tbody = document.getElementById("staffTable");
+  tbody.innerHTML = "";
+
+  list.forEach(u => {
+    const canEdit = currentUserData.accessLevel > u.accessLevel;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${u.username}</td>
+      <td>${u.role}</td>
+      <td>${u.accessLevel}</td>
+      <td>
+        <button class="action-btn" ${!canEdit ? "disabled" : ""}>Edit</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById("searchInput").addEventListener("input", e => {
+  const v = e.target.value.toLowerCase();
+  renderStaff(allStaff.filter(u =>
+    u.username.toLowerCase().includes(v) ||
+    u.role.toLowerCase().includes(v)
+  ));
+});
+
+document.getElementById("openCreateBtn").onclick = () =>
+  document.getElementById("createModal").classList.remove("hidden");
+
+function closeModal() {
+  document.getElementById("createModal").classList.add("hidden");
+}
+
+async function createStaff() {
+  alert("User creation will be wired to Cloud Functions next.");
+  closeModal();
+}
+
+document.getElementById("logoutBtn").onclick = () =>
+  auth.signOut().then(() => location.href = "login.html");
 </script>
 
 </body>
