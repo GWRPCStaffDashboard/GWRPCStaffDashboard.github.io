@@ -75,8 +75,9 @@
       }
 
       const data = doc.data();
-      document.getElementById("welcomeText").textContent =
-        `Welcome, ${data.username} (${data.role})`;
+      document.getElementById("userInfo").textContent =
+      `${data.username} (${data.role})`;
+
 
       // Permission-based UI
       if (data.accessLevel < 4) {
