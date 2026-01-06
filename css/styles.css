@@ -289,6 +289,75 @@ button:hover {
   background: rgba(255,255,255,0.04);
 }
 
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.search-input {
+  margin: 16px 0;
+  padding: 10px;
+  width: 300px;
+  border-radius: 8px;
+  border: none;
+}
+
+.primary-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.secondary-btn {
+  background: #334155;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+}
+
+.action-btn {
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-box {
+  background: #020617;
+  padding: 20px;
+  border-radius: 12px;
+  width: 320px;
+}
+
+.modal-box input {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+}
+
 /* ===== Dashboard Override ===== */
 
 body {
