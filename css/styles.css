@@ -254,10 +254,3 @@ body {
   inset: 0;
   display: flex;
 }
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  display: flex;
-  background: #f0f2f5;
-}
-
